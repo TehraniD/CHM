@@ -1,0 +1,1253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Patho Week 1 - Interactive Study Guide</title>
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --accent: #3498db;
+            --accent2: #e74c3c;
+            --success: #27ae60;
+            --warning: #f39c12;
+            --bg: #f5f7fa;
+            --card-bg: #ffffff;
+            --text: #2c3e50;
+            --light-text: #7f8c8d;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+        }
+        .header {
+            background: linear-gradient(135deg, var(--primary), #34495e);
+            color: white;
+            padding: 2rem;
+            text-align: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+        .header h1 { font-size: 1.8rem; margin-bottom: .3rem; }
+        .header p { opacity: 0.85; font-size: 0.95rem; }
+        .progress-bar-container {
+            background: rgba(255,255,255,0.2);
+            border-radius: 10px;
+            height: 8px;
+            margin-top: 1rem;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        .progress-bar {
+            background: var(--success);
+            height: 100%;
+            border-radius: 10px;
+            width: 0%;
+            transition: width 0.5s ease;
+        }
+        .progress-text {
+            color: rgba(255,255,255,0.8);
+            font-size: 0.8rem;
+            margin-top: 0.3rem;
+        }
+        .nav-tabs {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 0.5rem;
+            padding: 1rem;
+            background: white;
+            border-bottom: 1px solid #e0e0e0;
+            position: sticky;
+            top: 105px;
+            z-index: 99;
+        }
+        .nav-tab {
+            padding: 0.5rem 1rem;
+            border: 2px solid var(--accent);
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--accent);
+            background: white;
+            transition: all 0.3s;
+        }
+        .nav-tab:hover, .nav-tab.active {
+            background: var(--accent);
+            color: white;
+        }
+        .nav-tab.completed {
+            border-color: var(--success);
+            background: var(--success);
+            color: white;
+        }
+        .container { max-width: 900px; margin: 0 auto; padding: 1.5rem; }
+        .section {
+            display: none;
+            animation: fadeIn 0.4s ease;
+        }
+        .section.active { display: block; }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+            border-left: 4px solid var(--accent);
+        }
+        .card h2 {
+            color: var(--primary);
+            font-size: 1.4rem;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .card h3 {
+            color: var(--accent);
+            font-size: 1.1rem;
+            margin: 1rem 0 0.5rem;
+        }
+        .bold-term {
+            background: linear-gradient(120deg, #ffecd2 0%, #fcb69f 100%);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: 700;
+            cursor: help;
+        }
+        .highlight { background: #fff3cd; padding: 2px 4px; border-radius: 3px; }
+        ul { padding-left: 1.5rem; margin: 0.5rem 0; }
+        li { margin: 0.3rem 0; }
+        .flashcard-container {
+            perspective: 1000px;
+            margin: 1rem 0;
+        }
+        .flashcard {
+            width: 100%;
+            min-height: 180px;
+            position: relative;
+            cursor: pointer;
+            transform-style: preserve-3d;
+            transition: transform 0.6s;
+        }
+        .flashcard.flipped { transform: rotateY(180deg); }
+        .flashcard-front, .flashcard-back {
+            position: absolute;
+            width: 100%;
+            min-height: 180px;
+            backface-visibility: hidden;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+            text-align: center;
+            font-size: 1.1rem;
+        }
+        .flashcard-front {
+            background: linear-gradient(135deg, var(--accent), #2980b9);
+            color: white;
+            font-weight: 600;
+        }
+        .flashcard-back {
+            background: linear-gradient(135deg, var(--success), #219653);
+            color: white;
+            transform: rotateY(180deg);
+        }
+        .flashcard-nav {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+        .flashcard-nav button {
+            padding: 0.5rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            background: var(--accent);
+            color: white;
+            font-size: 0.9rem;
+        }
+        .flashcard-nav button:hover { opacity: 0.85; }
+        .quiz-option {
+            display: block;
+            width: 100%;
+            padding: 0.8rem 1rem;
+            margin: 0.5rem 0;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            background: white;
+            cursor: pointer;
+            text-align: left;
+            font-size: 0.95rem;
+            transition: all 0.3s;
+        }
+        .quiz-option:hover { border-color: var(--accent); background: #f0f7ff; }
+        .quiz-option.correct {
+            border-color: var(--success);
+            background: #d4edda;
+            color: #155724;
+        }
+        .quiz-option.incorrect {
+            border-color: var(--accent2);
+            background: #f8d7da;
+            color: #721c24;
+        }
+        .quiz-option:disabled { cursor: not-allowed; opacity: 0.7; }
+        .quiz-feedback {
+            padding: 1rem;
+            border-radius: 8px;
+            margin-top: 0.5rem;
+            font-weight: 500;
+            display: none;
+        }
+        .quiz-feedback.show { display: block; }
+        .quiz-feedback.correct-fb { background: #d4edda; color: #155724; }
+        .quiz-feedback.incorrect-fb { background: #f8d7da; color: #721c24; }
+        .matching-game {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.5rem;
+            margin: 1rem 0;
+        }
+        .match-item {
+            padding: 0.7rem;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            cursor: pointer;
+            text-align: center;
+            font-size: 0.9rem;
+            transition: all 0.3s;
+            min-height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .match-item.selected { border-color: var(--accent); background: #e8f4fd; }
+        .match-item.matched { border-color: var(--success); background: #d4edda; pointer-events: none; }
+        .match-item.wrong { border-color: var(--accent2); background: #f8d7da; }
+        .match-item.term-side { background: #f0f7ff; font-weight: 600; }
+        .score-badge {
+            display: inline-block;
+            background: var(--accent);
+            color: white;
+            padding: 0.3rem 0.8rem;
+            border-radius: 15px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+        .tip-box {
+            background: #fff3cd;
+            border: 1px solid #ffc107;
+            border-radius: 8px;
+            padding: 1rem;
+            margin: 1rem 0;
+            font-size: 0.9rem;
+        }
+        .tip-box::before { content: "💡 "; font-size: 1.1rem; }
+        .clinical-box {
+            background: #e8f5e9;
+            border: 1px solid var(--success);
+            border-radius: 8px;
+            padding: 1rem;
+            margin: 1rem 0;
+        }
+        .clinical-box::before { content: "🏥 Clinical Pearl: "; font-weight: 700; }
+        .fill-blank {
+            border: none;
+            border-bottom: 2px solid var(--accent);
+            padding: 2px 8px;
+            font-size: 1rem;
+            width: 160px;
+            background: transparent;
+            text-align: center;
+            outline: none;
+        }
+        .fill-blank.correct-input { border-color: var(--success); color: var(--success); }
+        .fill-blank.incorrect-input { border-color: var(--accent2); color: var(--accent2); }
+        .check-btn {
+            padding: 0.4rem 1rem;
+            background: var(--accent);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            margin-left: 0.5rem;
+        }
+        .check-btn:hover { opacity: 0.85; }
+        .section-complete-btn {
+            display: block;
+            width: 100%;
+            padding: 0.8rem;
+            background: var(--success);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 1.5rem;
+        }
+        .section-complete-btn:hover { opacity: 0.85; }
+        .drag-blank {
+            display: inline-block;
+            min-width: 120px;
+            border-bottom: 2px dashed var(--accent);
+            padding: 2px 8px;
+            margin: 0 4px;
+            min-height: 28px;
+            vertical-align: bottom;
+        }
+        .drag-blank.filled {
+            border-bottom-style: solid;
+            border-color: var(--success);
+            font-weight: 600;
+        }
+        .word-bank {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin: 1rem 0;
+        }
+        .word-chip {
+            padding: 0.4rem 0.8rem;
+            background: var(--accent);
+            color: white;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+        .word-chip:hover { opacity: 0.8; }
+        .word-chip.used { opacity: 0.3; pointer-events: none; }
+        .accordion {
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            margin: 0.5rem 0;
+            overflow: hidden;
+        }
+        .accordion-header {
+            padding: 0.8rem 1rem;
+            background: #f8f9fa;
+            cursor: pointer;
+            font-weight: 600;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .accordion-header:hover { background: #e8f4fd; }
+        .accordion-body {
+            padding: 0 1rem;
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s, padding 0.3s;
+        }
+        .accordion-body.open {
+            max-height: 600px;
+            padding: 1rem;
+        }
+        @media (max-width: 600px) {
+            .nav-tabs { gap: 0.3rem; }
+            .nav-tab { font-size: 0.75rem; padding: 0.4rem 0.7rem; }
+            .matching-game { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <h1>Patho Week 1 Interactive Study Guide</h1>
+    <p>HCR-240 // Tehrani</p>
+    <div class="progress-bar-container">
+        <div class="progress-bar" id="progressBar"></div>
+    </div>
+    <div class="progress-text" id="progressText">0 / 10 sections completed</div>
+</div>
+
+<div class="nav-tabs" id="navTabs">
+    <div class="nav-tab active" onclick="showSection(0)">Cellular Adaptation</div>
+    <div class="nav-tab" onclick="showSection(1)">Metaplasia & Dysplasia</div>
+    <div class="nav-tab" onclick="showSection(2)">Apoptosis & Inflammation</div>
+    <div class="nav-tab" onclick="showSection(3)">Wound Healing</div>
+    <div class="nav-tab" onclick="showSection(4)">Key Terms</div>
+    <div class="nav-tab" onclick="showSection(5)">Genetic Disorders</div>
+    <div class="nav-tab" onclick="showSection(6)">Infectious Diseases</div>
+    <div class="nav-tab" onclick="showSection(7)">Flashcards</div>
+    <div class="nav-tab" onclick="showSection(8)">Matching Game</div>
+    <div class="nav-tab" onclick="showSection(9)">Final Quiz</div>
+</div>
+
+<div class="container">
+
+<!-- SECTION 0: Cellular Adaptation -->
+<div class="section active" id="section0">
+    <div class="card">
+        <h2>🔬 Cellular Adaptation Overview</h2>
+        <p>Cells adapt to changes in their environment through several mechanisms. Understanding these adaptations is crucial for recognizing pathological processes.</p>
+
+        <h3><span class="bold-term">Atrophy</span></h3>
+        <p>Decrease in cell size and function</p>
+        <ul>
+            <li>Can occur due to <strong>disuse, poor nutrition, loss of nerve supply</strong></li>
+            <li>Prevention: <span class="bold-term">Active range of motion</span>, exercises, proper nutrition</li>
+            <li>Example: Muscle wasting during prolonged bed rest</li>
+        </ul>
+
+        <h3><span class="bold-term">Hypertrophy</span></h3>
+        <p>Increase in cell size</p>
+        <ul>
+            <li>Example: Enlarged heart muscle in athletes vs. heart failure</li>
+        </ul>
+
+        <div class="tip-box">
+            Remember: <strong>Atrophy = A-trophy = Away/shrinking</strong> (cells get smaller). <strong>Hypertrophy = Hyper = More</strong> (cells get bigger).
+        </div>
+
+        <h3><span class="bold-term">Hyperplasia</span></h3>
+        <p>Increase in the <em>number</em> of cells (vs. hypertrophy which is increase in cell <em>size</em>)</p>
+        <ul>
+            <li>Example: Thyroid in persistent iodine deficiency</li>
+        </ul>
+
+        <div class="clinical-box">
+            A patient on prolonged bed rest will likely experience atrophy. Nursing interventions include active range of motion exercises and proper nutrition to prevent muscle wasting.
+        </div>
+    </div>
+
+    <div class="card">
+        <h2>✏️ Quick Check</h2>
+        <div class="quiz-question" id="q0_1">
+            <p><strong>A patient has been on bed rest for 3 weeks. What cellular adaptation is most likely occurring in the skeletal muscles?</strong></p>
+            <button class="quiz-option" onclick="checkAnswer(this, true, 'q0_1_fb')">Atrophy</button>
+            <button class="quiz-option" onclick="checkAnswer(this, false, 'q0_1_fb')">Hypertrophy</button>
+            <button class="quiz-option" onclick="checkAnswer(this, false, 'q0_1_fb')">Hyperplasia</button>
+            <button class="quiz-option" onclick="checkAnswer(this, false, 'q0_1_fb')">Metaplasia</button>
+            <div class="quiz-feedback" id="q0_1_fb"></div>
+        </div>
+
+        <div class="quiz-question" id="q0_2" style="margin-top: 1.5rem;">
+            <p><strong>An athlete's heart is larger than normal. This is an example of:</strong></p>
+            <button class="quiz-option" onclick="checkAnswer(this, false, 'q0_2_fb')">Atrophy</button>
+            <button class="quiz-option" onclick="checkAnswer(this, true, 'q0_2_fb')">Hypertrophy</button>
+            <button class="quiz-option" onclick="checkAnswer(this, false, 'q0_2_fb')">Dysplasia</button>
+            <button class="quiz-option" onclick="checkAnswer(this, false, 'q0_2_fb')">Metaplasia</button>
+            <div class="quiz-feedback" id="q0_2_fb"></div>
+        </div>
+    </div>
+    <button class="section-complete-btn" onclick="completeSection(0)">✓ Mark Section Complete & Continue</button>
+</div>
+
+<!-- SECTION 1: Metaplasia & Dysplasia -->
+<div class="section" id="section1">
+    <div class="card">
+        <h2>🔄 Metaplasia</h2>
+        <p><span class="bold-term">Definition:</span> Reversible change in which one cell type changes to another — a protective response to chronic irritation.</p>
+
+        <h3>Common Examples:</h3>
+        <ul>
+            <li><span class="bold-term">Smoking</span> → Chronic exposure to toxins → Cells change from <strong>columnar to squamous epithelium</strong></li>
+            <li><span class="bold-term">GERD</span> → Chronic stomach acid irritates esophagus → Normal squamous epithelium replaced by columnar epithelium = <span class="bold-term">Barrett's esophagus</span></li>
+        </ul>
+
+        <div class="tip-box">
+            Metaplasia is <strong>reversible</strong> if the irritant is removed! Think of it as the body putting on a "tougher coat" to protect itself.
+        </div>
+    </div>
+
+    <div class="card">
+        <h2>⚠️ Dysplasia</h2>
+        <p><span class="bold-term">Definition:</span> Abnormal cell growth and organization within a specific tissue</p>
+        <ul>
+            <li>Potential <strong>precursor to cancer</strong></li>
+            <li>Often results from chronic inflammation</li>
+            <li>Example: Cervical dysplasia on Pap smear</li>
+        </ul>
+
+        <h3>The Progression Pathway:</h3>
+        <div style="text-align:center; font-size:1.1rem; padding:1rem; background:#f8f9fa; border-radius:8px; margin:1rem 0;">
+            <span class="bold-term">Chronic Inflammation</span> → <span class="bold-term">Metaplasia</span> → <span class="bold-term">Dysplasia</span> → <span class="bold-term">Carcinoma</span>
+        </div>
+
+        <div class="clinical-box">
+            This progression pathway is why cervical cancer screening (Pap smears) is critical — it catches dysplasia before it progresses to carcinoma.
+        </div>
+    </div>
+
+    <div class="card">
+        <h2>✏️ Quick Check</h2>
+        <div class="quiz-question" id="q1_1">
+            <p><strong>A patient with long-standing GERD develops Barrett's esophagus. This is an example of:</strong></p>
+            <button class="quiz-option" onclick="checkAnswer(this, false, 'q1_1_fb')">Dysplasia</button>
+            <button class="quiz-option" onclick="checkAnswer(this, true, 'q1_1_fb')">Metaplasia</button>
+            <button class="quiz-option" onclick="checkAnswer(this, false, 'q1_1_fb')">Hyperplasia</button>
+            <button class="quiz-option" onclick="checkAnswer(this, false, 'q1_1_fb')">Apoptosis</button>
+            <div class="quiz-feedback" id="q1_1_fb"></div>
+        </div>
+        <div class="quiz-question" id="q1_2" style="margin-top:1.5rem;">
+            <p><strong>Which of the following is the correct progression sequence?</strong></p>
+            <button class="quiz-option" onclick="checkAnswer(this, false, 'q1_2_fb')">Dysplasia → Metaplasia → Inflammation → Carcinoma</button>
+            <button class="quiz-option" onclick="checkAnswer(this, true, 'q1_2_fb')">Chronic Inflammation → Metaplasia → Dysplasia → Carcinoma</button>
+            <button class="quiz-option" onclick="checkAnswer(this, false, 'q1_2_fb')">Metaplasia → Inflammation → Carcinoma → Dysplasia</button>
+            <button class="quiz-option" onclick="checkAnswer(this, false, 'q1_2_fb')">Carcinoma → Dysplasia → Metaplasia → Inflammation</button>
+            <div class="quiz-feedback" id="q1_2_fb"></div>
+        </div>
+    </div>
+    <button class="section-complete-btn" onclick="completeSection(1)">✓ Mark Section Complete & Continue</button>
+</div>
+
+<!-- SECTION 2: Apoptosis & Inflammation -->
+<div class="section" id="section2">
+    <div class="card">
+        <h2>💀 Apoptosis</h2>
+        <p><span class="bold-term">Definition:</span> Programmed cell death — a regulated process that eliminates damaged or unnecessary cells.</p>
+        <p><strong>Key Point:</strong> Failure of apoptosis can lead to <span class="bold-term">neoplasia/cancer</span>.</p>
+        <div class="tip-box">
+            Think of apoptosis as the body's quality control — removing defective cells before they cause problems. When this system fails, uncontrolled growth (cancer) can result.
+        </div>
+    </div>
+
+    <div class="card">
+        <h2>🔥 Cardinal Signs of Inflammation</h2>
+        <ol style="padding-left:1.5rem; font-size:1.05rem;">
+            <li><strong>Redness</strong> (Rubor)</li>
+            <li><strong>Heat</strong> (Calor)</li>
+            <li><strong>Swelling</strong> (Tumor)</li>
+            <li><strong>Pain</strong> (Dolor)</li>
+            <li><strong>Loss of Function</strong> (Functio Laesa)</li>
+        </ol>
+    </div>
+
+    <div class="card">
+        <h2>🛡️ Inflammatory Response</h2>
+        <h3><span class="bold-term">Chemotaxis</span></h3>
+        <p>Promotes leukocyte migration to injury site — begins the cleanup process.</p>
+
+        <h3><span class="bold-term">Histamine Release</span></h3>
+        <p>Primary source: <span class="bold-term">Mast cells</span></p>
+        <ul>
+            <li>Promotes blood flow</li>
+            <li>Increases vessel permeability</li>
+        </ul>
+
+        <div class="clinical-box">
+            Understanding the inflammatory response helps explain why injured areas become red, warm, and swollen — histamine from mast cells increases blood flow and vessel permeability.
+        </div>
+    </div>
+
+    <div class="card">
+        <h2>✏️ Quick Check</h2>
+        <p><strong>Fill in the 5 cardinal signs of inflammation:</strong></p>
+        <ol style="padding-left:1.5rem;">
+            <li><input class="fill-blank" id="sign1" placeholder="?"> <button class="check-btn" onclick="checkFillBlank('sign1', ['redness','rubor'])">Check</button></li>
+            <li><input class="fill-blank" id="sign2" placeholder="?"> <button class="check-btn" onclick="checkFillBlank('sign2', ['heat','calor'])">Check</button></li>
+            <li><input class="fill-blank" id="sign3" placeholder="?"> <button class="check-btn" onclick="checkFillBlank('sign3', ['swelling','tumor'])">Check</button></li>
+            <li><input class="fill-blank" id="sign4" placeholder="?"> <button class="check-btn" onclick="checkFillBlank('sign4', ['pain','dolor'])">Check</button></li>
+            <li><input class="fill-blank" id="sign5" placeholder="?"> <button class="check-btn" onclick="checkFillBlank('sign5', ['loss of function','functio laesa'])">Check</button></li>
+        </ol>
+        <p style="margin-top:1rem;"><strong>What is the primary source of histamine?</strong></p>
+        <input class="fill-blank" id="hist1" placeholder="?"> <button class="check-btn" onclick="checkFillBlank('hist1', ['mast cells','mast cell'])">Check</button>
+    </div>
+    <button class="section-complete-btn" onclick="completeSection(2)">✓ Mark Section Complete & Continue</button>
+</div>
+
+<!-- SECTION 3: Wound Healing -->
+<div class="section" id="section3">
+    <div class="card">
+        <h2>🩹 Stages of Wound Healing</h2>
+
+        <div class="accordion">
+            <div class="accordion-header" onclick="toggleAccordion(this)">
+                1. Hemostasis (Clotting) <span>▼</span>
+            </div>
+            <div class="accordion-body">
+                <p>The body's emergency response at the beginning of wound healing.</p>
+                <ul>
+                    <li>Vessels narrow to reduce blood flow</li>
+                    <li>A clot starts to form</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="accordion">
+            <div class="accordion-header" onclick="toggleAccordion(this)">
+                2. Inflammation <span>▼</span>
+            </div>
+            <div class="accordion-body">
+                <p>Occurs right after hemostasis and lasts a few days.</p>
+                <ul>
+                    <li>The body's cleanup stage</li>
+                    <li>White blood cells fight infections</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="accordion">
+            <div class="accordion-header" onclick="toggleAccordion(this)">
+                3. Proliferation <span>▼</span>
+            </div>
+            <div class="accordion-body">
+                <p>Rebuilding of new tissue over a few weeks.</p>
+                <ul>
+                    <li>Fresh, red layer of skin called <strong>granulation tissue</strong> forms</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="accordion">
+            <div class="accordion-header" onclick="toggleAccordion(this)">
+                4. Remodeling <span>▼</span>
+            </div>
+            <div class="accordion-body">
+                <p>Final healing stage — can take up to a year.</p>
+                <ul>
+                    <li>Wound strengthens</li>
+                    <li>Scar develops</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <h2>🧵 Types of Healing</h2>
+        <h3><span class="bold-term">Primary Intention</span></h3>
+        <p>Clean wound edges brought together → Minimal scarring</p>
+
+        <h3><span class="bold-term">Secondary Intention</span></h3>
+        <p>Wound can't be closed with stitches/staples → Edges can't be brought together → Heals from bottom up → Larger scars</p>
+    </div>
+
+    <div class="card">
+        <h2>🚨 Wound Complications</h2>
+        <h3><span class="bold-term">Wound Dehiscence</span></h3>
+        <p>Disruption/separation of surgical incision or wound</p>
+
+        <h3><span class="bold-term">Wound Evisceration</span></h3>
+        <p>Protrusion of wound contents — a serious surgical complication</p>
+
+        <h3>Pressure Ulcer Treatment</h3>
+        <ul>
+            <li><span class="bold-term">Debridement</span>: Removing dead tissue to allow healthy tissue growth</li>
+            <li>Prevention: Shift frequently to reduce pressure on one spot</li>
+            <li><span class="bold-term">Eschar</span>: Dead tissue that needs removal</li>
+        </ul>
+    </div>
+
+    <div class="card">
+        <h2>✏️ Quick Check</h2>
+        <div class="quiz-question" id="q3_1">
+            <p><strong>A patient's surgical wound has opened and organs are protruding. This is called:</strong></p>
+            <button class="quiz-option" onclick="checkAnswer(this, false, 'q3_1_fb')">Dehiscence</button>
+            <button class="quiz-option" onclick="checkAnswer(this, true, 'q3_1_fb')">Evisceration</button>
+            <button class="quiz-option" onclick="checkAnswer(this, false, 'q3_1_fb')">Debridement</button>
+            <button class="quiz-option" onclick="checkAnswer(this, false, 'q3_1_fb')">Hemostasis</button>
+            <div class="quiz-feedback" id="q3_1_fb"></div>
+        </div>
+        <div class="quiz-question" id="q3_2" style="margin-top:1.5rem;">
+            <p><strong>Place the wound healing stages in order:</strong></p>
+            <p>1. <input class="fill-blank" id="wh1" placeholder="?"> 2. <input class="fill-blank" id="wh2" placeholder="?"> 3. <input class="fill-blank" id="wh3" placeholder="?"> 4. <input class="fill-blank" id="wh4" placeholder="?"></p>
+            <button class="check-btn" onclick="checkWoundOrder()">Check Order</button>
+            <div class="quiz-feedback" id="wh_fb"></div>
+        </div>
+    </div>
+    <button class="section-complete-btn" onclick="completeSection(3)">✓ Mark Section Complete & Continue</button>
+</div>
+
+<!-- SECTION 4: Key Terms -->
+<div class="section" id="section4">
+    <div class="card">
+        <h2>📖 Definition of 4 Key Terms</h2>
+
+        <div class="accordion">
+            <div class="accordion-header" onclick="toggleAccordion(this)">
+                <span class="bold-term">Sign</span> <span>▼</span>
+            </div>
+            <div class="accordion-body">
+                <p>An <strong>objective</strong>, observable, and measurable entity, such as fever, rash, or elevated blood pressure.</p>
+            </div>
+        </div>
+
+        <div class="accordion">
+            <div class="accordion-header" onclick="toggleAccordion(this)">
+                <span class="bold-term">Prognosis</span> <span>▼</span>
+            </div>
+            <div class="accordion-body">
+                <p>The expected outcome or course of a disease.</p>
+            </div>
+        </div>
+
+        <div class="accordion">
+            <div class="accordion-header" onclick="toggleAccordion(this)">
+                <span class="bold-term">Etiology</span> <span>▼</span>
+            </div>
+            <div class="accordion-body">
+                <p>The study of the causation or origins of a disease.</p>
+            </div>
+        </div>
+
+        <div class="accordion">
+            <div class="accordion-header" onclick="toggleAccordion(this)">
+                <span class="bold-term">Disease</span> <span>▼</span>
+            </div>
+            <div class="accordion-body">
+                <p>A disorder or pathological condition.</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <h2>📖 Important Wound Terms</h2>
+        <ul>
+            <li><span class="bold-term">Eschar</span>: Dead tissue that needs removal</li>
+            <li><span class="bold-term">Debridement</span>: Removal of dead tissue</li>
+            <li><span class="bold-term">Dehiscence</span>: Separation of wound edges</li>
+        </ul>
+    </div>
+
+    <div class="card">
+        <h2>✏️ Quick Check</h2>
+        <div class="quiz-question" id="q4_1">
+            <p><strong>A measurable finding such as elevated blood pressure is called a:</strong></p>
+            <button class="quiz-option" onclick="checkAnswer(this, true, 'q4_1_fb')">Sign</button>
+            <button class="quiz-option" onclick="checkAnswer(this, false, 'q4_1_fb')">Prognosis</button>
+            <button class="quiz-option" onclick="checkAnswer(this, false, 'q4_1_fb')">Etiology</button>
+            <button class="quiz-option" onclick="checkAnswer(this, false, 'q4_1_fb')">Disease</button>
+            <div class="quiz-feedback" id="q4_1_fb"></div>
+        </div>
+        <div class="quiz-question" id="q4_2" style="margin-top:1.5rem;">
+            <p><strong>The study of the causation or origins of a disease is called:</strong></p>
+            <button class="quiz-option" onclick="checkAnswer(this, false, 'q4_2_fb')">Prognosis</button>
+            <button class="quiz-option" onclick="checkAnswer(this, false, 'q4_2_fb')">Sign</button>
+            <button class="quiz-option" onclick="checkAnswer(this, true, 'q4_2_fb')">Etiology</button>
+            <button class="quiz-option" onclick="checkAnswer(this, false, 'q4_2_fb')">Disease</button>
+            <div class="quiz-feedback" id="q4_2_fb"></div>
+        </div>
+    </div>
+    <button class="section-complete-btn" onclick="completeSection(4)">✓ Mark Section Complete & Continue</button>
+</div>
+
+<!-- SECTION 5: Genetic Disorders -->
+<div class="section" id="section5">
+    <div class="card">
+        <h2>🧬 Cystic Fibrosis</h2>
+        <ul>
+            <li><span class="bold-term">Characteristic:</span> Thick, sticky mucus</li>
+            <li>Most common in <strong>Caucasians who are Ashkenazi Jews</strong></li>
+            <li>Both parents must be carriers → <strong>1 in 4 chance</strong> child has disease</li>
+            <li>Results from lack of a protein → imbalanced chloride</li>
+        </ul>
+        <h3><span class="bold-term">Treatments:</span></h3>
+        <ul>
+            <li><span class="bold-term">Chest Physiotherapy &amp; Airway Clearance</span> — performed <span class="bold-term">1 hour before</span> meals</li>
+            <li><span class="bold-term">Corticosteroid Inhalers</span> — decrease lung inflammation</li>
+            <li><span class="bold-term">Bronchodilators</span> — widen airways, increase airflow</li>
+            <li><span class="bold-term">Acetylcysteine</span> — mucolytic (patient may complain about odor)</li>
+        </ul>
+    </div>
+
+    <div class="card">
+        <h2>🧬 Tay-Sachs Disease</h2>
+        <ul>
+            <li>Rare, inherited disorder — <span class="bold-term">fatty substance builds up in the brain</span></li>
+            <li>Destroys nerve cells</li>
+            <li>Age of onset: ~6 months</li>
+            <li>Missing enzyme: <span class="bold-term">Hex-A</span></li>
+            <li>Symptoms: Vision loss, difficulty swallowing, paralysis</li>
+            <li>Prognosis: <strong>Fatal</strong> (~5 years old)</li>
+        </ul>
+    </div>
+
+    <div class="card">
+        <h2>🧬 Huntington's Disease</h2>
+        <ul>
+            <li><span class="bold-term">Autosomal dominant</span> — one parent with HD = 50% chance</li>
+            <li>Adult onset: typically 30s-40s</li>
+        </ul>
+        <h3><span class="bold-term">Early Signs:</span></h3>
+        <ul>
+            <li><span class="bold-term">Chorea</span> — jerky, random, uncontrollable movements</li>
+            <li><span class="bold-term">Behavior Changes</span> — mood swings, depression, irritability</li>
+        </ul>
+        <h3>Progression:</h3>
+        <ul>
+            <li>Chorea increases, cognitive decline, motor control worsens</li>
+            <li>Difficulty in speech and swallowing</li>
+        </ul>
+    </div>
+
+    <div class="card">
+        <h2>🧬 Down Syndrome</h2>
+        <ul>
+            <li>Caused by extra copy of <strong>chromosome 21</strong> (Trisomy 21)</li>
+            <li>Affects ~1 in 800-1000 newborns</li>
+            <li><span class="bold-term">Diagnostic Test: Karyotyping</span></li>
+            <li>Features: Flattened face, short nose bridge, smaller ears, shorter neck, decreased muscle tone, developmental delays</li>
+        </ul>
+    </div>
+
+    <div class="card">
+        <h2>✏️ Quick Check</h2>
+        <div class="quiz-question" id="q5_1">
+            <p><strong>Chest physiotherapy for cystic fibrosis should be performed:</strong></p>
+            <button class="quiz-option" onclick="checkAnswer(this, false, 'q5_1_fb')">Immediately after meals</button>
+            <button class="quiz-option" onclick="checkAnswer(this, true, 'q5_1_fb')">1 hour before meals</button>
+            <button class="quiz-option" onclick="checkAnswer(this, false, 'q5_1_fb')">During meals</button>
+            <button class="quiz-option" onclick="checkAnswer(this, false, 'q5_1_fb')">2 hours after meals</button>
+            <div class="quiz-feedback" id="q5_1_fb"></div>
+        </div>
+        <div class="quiz-question" id="q5_2" style="margin-top:1.5rem;">
+            <p><strong>The missing enzyme in Tay-Sachs disease is:</strong></p>
+            <button class="quiz-option" onclick="checkAnswer(this, false, 'q5_2_fb')">Hex-B</button>
+            <button class="quiz-option" onclick="checkAnswer(this, true, 'q5_2_fb')">Hex-A</button>
+            <button class="quiz-option" onclick="checkAnswer(this, false, 'q5_2_fb')">CFTR</button>
+            <button class="quiz-option" onclick="checkAnswer(this, false, 'q5_2_fb')">Huntingtin</button>
+            <div class="quiz-feedback" id="q5_2_fb"></div>
+        </div>
+        <div class="quiz-question" id="q5_3" style="margin-top:1.5rem;">
+            <p><strong>Huntington's disease is inherited in what pattern?</strong></p>
+            <button class="quiz-option" onclick="checkAnswer(this, false, 'q5_3_fb')">Autosomal recessive</button>
+            <button class="quiz-option" onclick="checkAnswer(this, true, 'q5_3_fb')">Autosomal dominant</button>
+            <button class="quiz-option" onclick="checkAnswer(this, false, 'q5_3_fb')">X-linked recessive</button>
+            <button class="quiz-option" onclick="checkAnswer(this, false, 'q5_3_fb')">Codominant</button>
+            <div class="quiz-feedback" id="q5_3_fb"></div>
+        </div>
+    </div>
+    <button class="section-complete-btn" onclick="completeSection(5)">✓ Mark Section Complete & Continue</button>
+</div>
+
+<!-- SECTION 6: Infectious Diseases -->
+<div class="section" id="section6">
+    <div class="card">
+        <h2>🦠 Clostridium botulinum</h2>
+        <ul>
+            <li>Produces toxin preventing muscle contraction</li>
+            <li>ACh is NOT released → neural impulse not transmitted → <strong>flaccid paralysis</strong></li>
+        </ul>
+    </div>
+
+    <div class="card">
+        <h2>🦠 <span class="bold-term">Clostridium tetani</span></h2>
+        <ul>
+            <li>Causes <strong>increased muscle tone</strong></li>
+            <li>Affects <strong>Masseter muscles</strong> → "lockjaw"</li>
+            <li>Results in generalized muscle spasms</li>
+        </ul>
+        <div class="tip-box">
+            <strong>Botulinum = Floppy</strong> (flaccid paralysis). <strong>Tetani = Tight</strong> (muscle spasms/lockjaw). Opposite effects!
+        </div>
+    </div>
+
+    <div class="card">
+        <h2>🦠 Staphylococcus aureus</h2>
+        <p>Source of antibiotic-resistant strains:</p>
+        <ul>
+            <li><strong>MRSA</strong> — Methicillin-resistant Staphylococcus aureus</li>
+            <li><strong>VRSA</strong> — Vancomycin-resistant Staphylococcus aureus</li>
+        </ul>
+    </div>
+
+    <div class="card">
+        <h2>🧠 <span class="bold-term">Bacterial Meningitis</span></h2>
+        <p>Inflammation of the meninges (protective membranes covering brain and spinal cord)</p>
+        <ul>
+            <li>Requires <strong>immediate medical attention</strong></li>
+            <li>First-line treatment: <span class="bold-term">Antibiotics</span></li>
+        </ul>
+        <h3>Most Common Pathogens:</h3>
+        <ul>
+            <li>Streptococcus pneumoniae</li>
+            <li>Neisseria meningitidis</li>
+            <li>Haemophilus influenzae</li>
+        </ul>
+        <h3><span class="bold-term">Classic Clinical Presentation:</span></h3>
+        <ul>
+            <li>Neck stiffness (meningeal signs)</li>
+            <li>Altered mental status</li>
+            <li>Severe headache</li>
+            <li>Kernig's/Brudzinski's signs positive</li>
+        </ul>
+        <h3><span class="bold-term">Diagnostic Tests:</span></h3>
+        <ul>
+            <li><strong>Lumbar puncture</strong> (Gold standard)</li>
+            <li>CSF analysis: ↑ Protein, ↓ Glucose, ↑ WBC, Positive culture</li>
+        </ul>
+    </div>
+
+    <div class="card">
+        <h2>🦠 <span class="bold-term">Epstein-Barr Virus</span></h2>
+        <p><span class="bold-term">Causes infectious mononucleosis (mono)</span></p>
+        <ul>
+            <li>Common in young adults</li>
+            <li>Symptoms: Fatigue, sore throat, lymph node swelling</li>
+        </ul>
+    </div>
+
+    <div class="card">
+        <h2>🌡️ <span class="bold-term">Pyrogens</span> &amp; <span class="bold-term">Expectorants</span></h2>
+        <p><strong>Pyrogens:</strong> Substances that <span class="bold-term">induce fever</span> — signal the brain to increase body temperature to fight infection.</p>
+        <p><strong><span class="bold-term">Expectorant:</span></strong> Medications that loosen and expel mucus from the respiratory tract, aiding in relieving bronchitis symptoms.</p>
+    </div>
+
+    <div class="card">
+        <h2>✏️ Quick Check</h2>
+        <div class="quiz-question" id="q6_1">
+            <p><strong>C. botulinum causes flaccid paralysis. C. tetani causes:</strong></p>
+            <button class="quiz-option" onclick="checkAnswer(this, false, 'q6_1_fb')">Flaccid paralysis</button>
+            <button class="quiz-option" onclick="checkAnswer(this, true, 'q6_1_fb')">Increased muscle tone and spasms</button>
+            <button class="quiz-option" onclick="checkAnswer(this, false, 'q6_1_fb')">Decreased muscle tone</button>
+            <button class="quiz-option" onclick="checkAnswer(this, false, 'q6_1_fb')">Muscle atrophy</button>
+            <div class="quiz-feedback" id="q6_1_fb"></div>
+        </div>
+        <div class="quiz-question" id="q6_2" style="margin-top:1.5rem;">
+            <p><strong>The gold standard diagnostic test for bacterial meningitis is:</strong></p>
+            <button class="quiz-option" onclick="checkAnswer(this, false, 'q6_2_fb')">CT scan</button>
+            <button class="quiz-option" onclick="checkAnswer(this, false, 'q6_2_fb')">MRI</button>
+            <button class="quiz-option" onclick="checkAnswer(this, true, 'q6_2_fb')">Lumbar puncture</button>
+            <button class="quiz-option" onclick="checkAnswer(this, false, 'q6_2_fb')">Blood culture</button>
+            <div class="quiz-feedback" id="q6_2_fb"></div>
+        </div>
+    </div>
+    <button class="section-complete-btn" onclick="completeSection(6)">✓ Mark Section Complete & Continue</button>
+</div>
+
+<!-- SECTION 7: Flashcards -->
+<div class="section" id="section7">
+    <div class="card">
+        <h2>🃏 Flashcards — Click to Flip!</h2>
+        <div class="flashcard-container">
+            <div class="flashcard" id="flashcard" onclick="this.classList.toggle('flipped')">
+                <div class="flashcard-front" id="flashFront">Atrophy</div>
+                <div class="flashcard-back" id="flashBack">Decrease in cell size and function. Caused by disuse, poor nutrition, or loss of nerve supply.</div>
+            </div>
+        </div>
+        <div class="flashcard-nav">
+            <button onclick="prevFlashcard()">← Prev</button>
+            <span id="flashcardCount">1 / 20</span>
+            <button onclick="nextFlashcard()">Next →</button>
+        </div>
+        <p style="text-align:center; color:var(--light-text); margin-top:0.5rem;">Click the card to flip it</p>
+    </div>
+    <button class="section-complete-btn" onclick="completeSection(7)">✓ Mark Section Complete & Continue</button>
+</div>
+
+<!-- SECTION 8: Matching Game -->
+<div class="section" id="section8">
+    <div class="card">
+        <h2>🔗 Matching Game</h2>
+        <p>Click a term on the left, then click its matching definition on the right.</p>
+        <p><span class="score-badge" id="matchScore">Matched: 0 / 8</span></p>
+        <div class="matching-game" id="matchingGame"></div>
+        <button class="check-btn" onclick="resetMatching()" style="margin-top:1rem;">🔄 Reset</button>
+    </div>
+    <button class="section-complete-btn" onclick="completeSection(8)">✓ Mark Section Complete & Continue</button>
+</div>
+
+<!-- SECTION 9: Final Quiz -->
+<div class="section" id="section9">
+    <div class="card">
+        <h2>🏆 Final Comprehensive Quiz</h2>
+        <p>Test your knowledge across all topics! <span class="score-badge" id="finalScore">Score: 0 / 10</span></p>
+        <div id="finalQuizContainer"></div>
+    </div>
+</div>
+
+</div><!-- end container -->
+
+<script>
+// ======== SECTION MANAGEMENT ========
+const totalSections = 10;
+const completedSections = new Set();
+
+function showSection(index) {
+    document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+    document.getElementById('section' + index).classList.add('active');
+    document.querySelectorAll('.nav-tab').forEach((t, i) => {
+        t.classList.toggle('active', i === index);
+    });
+    window.scrollTo({top: 0, behavior: 'smooth'});
+}
+
+function completeSection(index) {
+    completedSections.add(index);
+    const tabs = document.querySelectorAll('.nav-tab');
+    tabs[index].classList.add('completed');
+    updateProgress();
+    if (index < totalSections - 1) showSection(index + 1);
+}
+
+function updateProgress() {
+    const pct = (completedSections.size / totalSections) * 100;
+    document.getElementById('progressBar').style.width = pct + '%';
+    document.getElementById('progressText').textContent = completedSections.size + ' / ' + totalSections + ' sections completed';
+}
+
+// ======== QUIZ ========
+function checkAnswer(btn, correct, fbId) {
+    const parent = btn.parentElement;
+    const buttons = parent.querySelectorAll('.quiz-option');
+    buttons.forEach(b => {
+        b.disabled = true;
+        if (b === btn) b.classList.add(correct ? 'correct' : 'incorrect');
+    });
+    // Highlight correct answer if wrong
+    if (!correct) {
+        buttons.forEach(b => {
+            if (b.onclick && b.onclick.toString().includes('true')) b.classList.add('correct');
+        });
+    }
+    const fb = document.getElementById(fbId);
+    fb.textContent = correct ? '✓ Correct!' : '✗ Incorrect — review this concept above.';
+    fb.className = 'quiz-feedback show ' + (correct ? 'correct-fb' : 'incorrect-fb');
+}
+
+// ======== FILL BLANK ========
+function checkFillBlank(inputId, answers) {
+    const input = document.getElementById(inputId);
+    const val = input.value.trim().toLowerCase();
+    if (answers.some(a => val === a.toLowerCase())) {
+        input.classList.add('correct-input');
+        input.classList.remove('incorrect-input');
+    } else {
+        input.classList.add('incorrect-input');
+        input.classList.remove('correct-input');
+    }
+}
+
+// ======== WOUND ORDER ========
+function checkWoundOrder() {
+    const answers = [
+        ['hemostasis','clotting'],
+        ['inflammation'],
+        ['proliferation'],
+        ['remodeling','remodelation','remodelling']
+    ];
+    let allCorrect = true;
+    for (let i = 1; i <= 4; i++) {
+        const input = document.getElementById('wh' + i);
+        const val = input.value.trim().toLowerCase();
+        if (answers[i-1].some(a => val === a)) {
+            input.classList.add('correct-input');
+            input.classList.remove('incorrect-input');
+        } else {
+            input.classList.add('incorrect-input');
+            input.classList.remove('correct-input');
+            allCorrect = false;
+        }
+    }
+    const fb = document.getElementById('wh_fb');
+    fb.textContent = allCorrect ? '✓ Correct order!' : '✗ The correct order is: Hemostasis → Inflammation → Proliferation → Remodeling';
+    fb.className = 'quiz-feedback show ' + (allCorrect ? 'correct-fb' : 'incorrect-fb');
+}
+
+// ======== ACCORDION ========
+function toggleAccordion(header) {
+    const body = header.nextElementSibling;
+    body.classList.toggle('open');
+    const arrow = header.querySelector('span');
+    arrow.textContent = body.classList.contains('open') ? '▲' : '▼';
+}
+
+// ======== FLASHCARDS ========
+const flashcards = [
+    {front: "Atrophy", back: "Decrease in cell size and function. Caused by disuse, poor nutrition, or loss of nerve supply."},
+    {front: "Hypertrophy", back: "Increase in cell size. Example: Enlarged heart muscle in athletes."},
+    {front: "Hyperplasia", back: "Increase in the number of cells. Example: Thyroid in iodine deficiency."},
+    {front: "Metaplasia", back: "Reversible change in which one cell type changes to another. Protective response to chronic irritation."},
+    {front: "Barrett's Esophagus", back: "GERD-related metaplasia where squamous epithelium is replaced by columnar epithelium in the esophagus."},
+    {front: "Dysplasia", back: "Abnormal cell growth and organization — potential precursor to cancer."},
+    {front: "Apoptosis", back: "Programmed cell death. Failure can lead to neoplasia/cancer."},
+    {front: "Chemotaxis", back: "Process that promotes leukocyte migration to injury site."},
+    {front: "Histamine", back: "Released by mast cells. Promotes blood flow and increases vessel permeability."},
+    {front: "Wound Dehiscence", back: "Disruption or separation of a surgical incision or wound."},
+    {front: "Wound Evisceration", back: "Protrusion of wound contents — serious surgical complication."},
+    {front: "Eschar", back: "Dead tissue that needs removal from a wound."},
+    {front: "Debridement", back: "The removal of dead tissue from a wound."},
+    {front: "Chorea", back: "Jerky, random, uncontrollable movements — early sign of Huntington's disease."},
+    {front: "Hex-A", back: "The missing enzyme in Tay-Sachs disease."},
+    {front: "Karyotyping", back: "Diagnostic test that analyzes chromosomes — used to confirm Down Syndrome (Trisomy 21)."},
+    {front: "Clostridium tetani", back: "Causes increased muscle tone and lockjaw (affects masseter muscles). Results in generalized muscle spasms."},
+    {front: "Bacterial Meningitis", back: "Inflammation of the meninges. Gold standard test: Lumbar puncture. First-line treatment: Antibiotics."},
+    {front: "Pyrogens", back: "Substances that induce fever — signal the brain to increase body temperature."},
+    {front: "Expectorant", back: "Medication that loosens and expels mucus from the respiratory tract."},
+];
+let currentFlashcard = 0;
+
+function updateFlashcard() {
+    const fc = document.getElementById('flashcard');
+    fc.classList.remove('flipped');
+    document.getElementById('flashFront').textContent = flashcards[currentFlashcard].front;
+    document.getElementById('flashBack').textContent = flashcards[currentFlashcard].back;
+    document.getElementById('flashcardCount').textContent = (currentFlashcard + 1) + ' / ' + flashcards.length;
+}
+
+function nextFlashcard() {
+    currentFlashcard = (currentFlashcard + 1) % flashcards.length;
+    updateFlashcard();
+}
+
+function prevFlashcard() {
+    currentFlashcard = (currentFlashcard - 1 + flashcards.length) % flashcards.length;
+    updateFlashcard();
+}
+
+// ======== MATCHING GAME ========
+const matchPairs = [
+    {term: "Atrophy", def: "Decrease in cell size"},
+    {term: "Hypertrophy", def: "Increase in cell size"},
+    {term: "Metaplasia", def: "One cell type changes to another"},
+    {term: "Apoptosis", def: "Programmed cell death"},
+    {term: "Dehiscence", def: "Separation of wound edges"},
+    {term: "Eschar", def: "Dead tissue needing removal"},
+    {term: "Chorea", def: "Jerky, uncontrollable movements"},
+    {term: "Pyrogens", def: "Substances that induce fever"},
+];
+
+let selectedTerm = null;
+let matchedCount = 0;
+
+function shuffle(arr) {
+    for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    return arr;
+}
+
+function initMatching() {
+    const game = document.getElementById('matchingGame');
+    game.innerHTML = '';
+    matchedCount = 0;
+    selectedTerm = null;
+    document.getElementById('matchScore').textContent = 'Matched: 0 / ' + matchPairs.length;
+
+    const terms = shuffle([...matchPairs].map((p, i) => ({text: p.term, index: i, type: 'term'})));
+    const defs = shuffle([...matchPairs].map((p, i) => ({text: p.def, index: i, type: 'def'})));
+
+    for (let i = 0; i < matchPairs.length; i++) {
+        const termEl = document.createElement('div');
+        termEl.className = 'match-item term-side';
+        termEl.textContent = terms[i].text;
+        termEl.dataset.index = terms[i].index;
+        termEl.dataset.type = 'term';
+        termEl.onclick = function() { selectMatch(this); };
+
+        const defEl = document.createElement('div');
+        defEl.className = 'match-item';
+        defEl.textContent = defs[i].text;
+        defEl.dataset.index = defs[i].index;
+        defEl.dataset.type = 'def';
+        defEl.onclick = function() { selectMatch(this); };
+
+        game.appendChild(termEl);
+        game.appendChild(defEl);
+    }
+}
+
+function selectMatch(el) {
+    if (el.classList.contains('matched')) return;
+
+    if (el.dataset.type === 'term') {
+        document.querySelectorAll('.match-item.term-side.selected').forEach(e => e.classList.remove('selected'));
+        el.classList.add('selected');
+        selectedTerm = el;
+    } else if (el.dataset.type === 'def' && selectedTerm) {
+        if (selectedTerm.dataset.index === el.dataset.index) {
+            selectedTerm.classList.remove('selected');
+            selectedTerm.classList.add('matched');
+            el.classList.add('matched');
+            matchedCount++;
+            document.getElementById('matchScore').textContent = 'Matched: ' + matchedCount + ' / ' + matchPairs.length;
+            selectedTerm = null;
+        } else {
+            el.classList.add('wrong');
+            selectedTerm.classList.add('wrong');
+            setTimeout(() => {
+                el.classList.remove('wrong');
+                if (selectedTerm) selectedTerm.classList.remove('wrong');
+                selectedTerm = null;
+                document.querySelectorAll('.match-item.selected').forEach(e => e.classList.remove('selected'));
+            }, 600);
+        }
+    }
+}
+
+function resetMatching() { initMatching(); }
+
+// ======== FINAL QUIZ ========
+const finalQuiz = [
+    {q: "Which cellular adaptation involves a decrease in cell size?", opts: ["Hypertrophy","Atrophy","Hyperplasia","Metaplasia"], ans: 1},
+    {q: "Barrett's esophagus is an example of:", opts: ["Dysplasia","Apoptosis","Metaplasia","Neoplasia"], ans: 2},
+    {q: "The progression to cancer follows which path?", opts: ["Dysplasia → Metaplasia → Carcinoma","Inflammation → Metaplasia → Dysplasia → Carcinoma","Metaplasia → Inflammation → Carcinoma","Apoptosis → Dysplasia → Carcinoma"], ans: 1},
+    {q: "Which cells are the primary source of histamine?", opts: ["Red blood cells","Platelets","Mast cells","Neutrophils"], ans: 2},
+    {q: "The third stage of wound healing is:", opts: ["Hemostasis","Inflammation","Proliferation","Remodeling"], ans: 2},
+    {q: "A wound where organs protrude through the incision is called:", opts: ["Dehiscence","Debridement","Evisceration","Eschar"], ans: 2},
+    {q: "Cystic fibrosis is MOST common in:", opts: ["African Americans","Caucasians/Ashkenazi Jews","Hispanic populations","Asian populations"], ans: 1},
+    {q: "C. tetani causes lockjaw by affecting which muscles?", opts: ["Deltoid","Biceps","Masseter","Gastrocnemius"], ans: 2},
+    {q: "CSF analysis in bacterial meningitis shows:", opts: ["↓ Protein, ↑ Glucose","↑ Protein, ↓ Glucose","Normal protein, normal glucose","↓ Protein, ↓ Glucose"], ans: 1},
+    {q: "Huntington's disease inheritance pattern is:", opts: ["Autosomal recessive","X-linked","Autosomal dominant","Codominant"], ans: 2},
+];
+
+let finalScore = 0;
+
+function initFinalQuiz() {
+    const container = document.getElementById('finalQuizContainer');
+    container.innerHTML = '';
+    finalScore = 0;
+
+    finalQuiz.forEach((item, qi) => {
+        const div = document.createElement('div');
+        div.style.marginTop = '1.5rem';
+        div.innerHTML = '<p><strong>' + (qi+1) + '. ' + item.q + '</strong></p>';
+        item.opts.forEach((opt, oi) => {
+            const btn = document.createElement('button');
+            btn.className = 'quiz-option';
+            btn.textContent = opt;
+            btn.onclick = function() { checkFinalAnswer(this, oi === item.ans, 'fq_fb_' + qi, qi); };
+            div.appendChild(btn);
+        });
+        const fb = document.createElement('div');
+        fb.className = 'quiz-feedback';
+        fb.id = 'fq_fb_' + qi;
+        div.appendChild(fb);
+        container.appendChild(div);
+    });
+}
+
+function checkFinalAnswer(btn, correct, fbId, qi) {
+    const parent = btn.parentElement;
+    const buttons = parent.querySelectorAll('.quiz-option');
+    buttons.forEach(b => b.disabled = true);
+    btn.classList.add(correct ? 'correct' : 'incorrect');
+    if (!correct) {
+        const correctIdx = finalQuiz[qi].ans;
+        buttons[correctIdx + 1].classList.add('correct'); // +1 because first child is <p>
+    }
+    if (correct) finalScore++;
+    document.getElementById('finalScore').textContent = 'Score: ' + finalScore + ' / ' + finalQuiz.length;
+    const fb = document.getElementById(fbId);
+    fb.textContent = correct ? '✓ Correct!' : '✗ Incorrect';
+    fb.className = 'quiz-feedback show ' + (correct ? 'correct-fb' : 'incorrect-fb');
+}
+
+// Initialize
+initMatching();
+initFinalQuiz();
+updateFlashcard();
+</script>
+</body>
+</html>
